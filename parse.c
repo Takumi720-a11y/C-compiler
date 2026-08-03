@@ -190,8 +190,10 @@ Node *equalty(void){
       node = new_node(ND_EQ,node,relational());
     else if(consume("!="))
       node = new_node(ND_NE,node,relational());
+    else
+      return node;
   }
-  return node;
+ 
 }
 
 Node *relational(void){
