@@ -39,6 +39,7 @@ void gen(Node *node){
         printf("  mov rsp, rbp\n");
         printf("  pop rbp\n");
         printf("  ret\n");
+        return;
   }
   gen(node->lhs);
   gen(node->rhs);
@@ -58,7 +59,7 @@ void gen(Node *node){
         break;
     case ND_DIV:
         printf("cqo\n");
-        printf("idiv rax, rdi\n");
+        printf("idiv rdi\n");
         break;
     case ND_EQ:
         printf("  cmp rax, rdi\n");
