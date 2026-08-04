@@ -5,7 +5,7 @@
 void gen_lval(Node *node){
     if(node->kind != ND_LVAR)
         error("代入の左辺値が変数ではありません");
-    printf("mov rax rbp\n");
+    printf("mov rax, rbp\n");
     printf("sub rax, %d\n",node->offset);
     printf("push rax\n");
 }
@@ -15,12 +15,6 @@ void gen(Node *node){
     printf("push %d\n",node->val);
     return;
   }
-  gen(node->lhs);
-  gen(node->rhs);
-
-  printf("pop rdi\n");
-  printf("pop rax\n");
-
   switch(node->kind){
     case ND_NUM:
         printf("  push %d\n", node->val);
@@ -37,10 +31,20 @@ void gen(Node *node){
         printf("  pop rdi\n");
         printf("  pop rax\n");
         printf("  mov [rax], rdi\n");
-        printf("  pshu rdi\n");
+        printf("  push rdi\n");
         return; 
+    case ND_RETURN:
+        gen(node->lhs);
+        printf("  pop rax\n");
+        printf("  mov rsp, rbp\n");
+        printf("  pop rbp\n");
+        printf("  ret\n");
   }
+  gen(node->lhs);
+  gen(node->rhs);
 
+  printf("pop rdi\n");
+  printf("pop rax\n");
 
   switch(node->kind){
     case ND_ADD:

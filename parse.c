@@ -2,18 +2,32 @@
 #include "9cc.h"
 
 Node *code[100];
-LVar *locals;
 
+char *user_input;
+void error(char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
+void error_at(char *loc, char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+
+  int pos = loc - user_input;
+  fprintf(stderr, "%s\n", user_input);
+  fprintf(stderr, "%*s", pos, " "); // pos個の空白を出力
+  fprintf(stderr, "^ ");
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
 
-LVar *find_lvar(Token *tok){
-	for(LVar *var = locals; var; var = var->next){
-		if(var->len == tok->len && !memcmp(tok->str,var->name,var->len))
-			return var;
-	}
-	return NULL;
-}
+
 
 Node *new_node(NodeKind kind,Node *lhs, Node *rhs){
   Node *node = calloc(1, sizeof(Node));
@@ -137,33 +151,21 @@ Node *unary(void){
   return primary();
 }
 
-Node *primary(void){
-  if(consume("(")){
+Node *primary(void) {
+  if (consume("(")) {
     Node *node = expr();
     expect(")");
     return node;
   }
   Token *tok = consume_ident();
-  if(tok){
-    Node *node = calloc(1,sizeof(Node));
+  if (tok) {
+    Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
-		LVar *lvar = find_lvar(tok);
-		if(lvar){
-			node->offset = lvar->offset;
-		}else{
-			lvar = calloc(1,sizeof(LVar));
-			lvar->next = locals;
-			lvar->name = tok->str;
-			lvar->len = tok->len;
-			if(locals)
-				lvar->offset = locals->offset + 8;
-			else	
-				lvar->offset = 8;
-			node->offset = lvar->offset;
-			locals = lvar;	
-		}
+    node->offset = (tok->str[0] - 'a' + 1) * 8;
+    
     return node;
   }
-  return new_node_num(expect_number()); 
+
+  return new_node_num(expect_number());
 }
 

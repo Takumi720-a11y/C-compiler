@@ -91,16 +91,14 @@ Token *tokenize() {
       continue;
     }
 
-    if(strncmp(p,"return",6) == 0 && !is_alnum(p[6])){
-        cur = new_token(TK_RESERVED,cur,p,6);
-        p += 6;
-        continue;
-    }
 
-    if('a' <= *p && *p <= 'z'){
-      cur = new_token(TK_IDENT,cur,p,1);
-      cur->len = 1;
-      p += 1;
+    if(('a' <= *p && *p <= 'z') ||
+       ('A' <= *p && *p <= 'Z') ||
+       (*p == '_')){
+      char *q = p;
+      while(is_alnum(*p))
+        p++;
+      cur = new_token(TK_IDENT,cur,q,p-q);
       continue;
     }
 
