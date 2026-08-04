@@ -56,15 +56,21 @@ struct Node{
     int offset;    //kindがND_LVARの場合のみ使う
 };
 
+typedef struct LVar LVar;
 
-
-
+//ローカル変数の型
+struct LVar{
+  LVar *next;   //次の変数 or NULL
+  char *name;  //変数の名前
+  int len;      //名前の長さ
+  int offset;   //RBPからのオフセット
+};
 
 //複数ファイルで共有されている変数
 extern char *user_input;
 extern Token *token;
 extern Node *code[100];
-
+extern LVar *locals;
 
 //複数ファイルで共有されている関数
 void error(char *fmt, ...);

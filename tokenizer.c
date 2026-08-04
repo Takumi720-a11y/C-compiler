@@ -18,7 +18,7 @@ void expect(char *op) {
   if (token->kind != TK_RESERVED || 
       strlen(op) != token->len ||
       memcmp(token->str , op, token->len))
-    error_at(token->str,"'%c'ではありません", op);
+    error_at(token->str,"'%s'ではありません", op);
   token = token->next;
 }
 
@@ -46,6 +46,15 @@ int is_alnum(char c){
            ('0' <= c && c <= '9') ||
            (c == '_');
 }
+
+Token *consume_ident(){
+    if(token->kind != TK_IDENT)
+        return NULL;
+    Token *tok = token;
+    token = token->next;
+    return tok;
+}
+
 
 Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   Token *tok = calloc(1, sizeof(Token));
@@ -109,10 +118,3 @@ Token *tokenize() {
   return head.next;
 }
 
-Token *consume_ident(){
-    if(token->kind != TK_IDENT)
-        return NULL;
-    Token *tok = token;
-    token = token->next;
-    return tok;
-}
