@@ -78,7 +78,7 @@ Token *tokenize() {
       p++;
       continue;
     }
-
+    
     if(strncmp(p,"return",6) == 0 && !is_alnum(p[6])){
       cur = new_token(TK_RESERVED, cur, p,6);
       p += 6;
@@ -112,7 +112,7 @@ Token *tokenize() {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '>' || *p == '<' || *p == '=' || *p == ';') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '>' || *p == '<' || *p == '=' || *p == ';' || *p == '{' || *p == '}') {
       cur = new_token(TK_RESERVED, cur, p,1);
       p += 1;
       continue;

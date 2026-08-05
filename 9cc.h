@@ -44,7 +44,8 @@ typedef enum{
   ND_RETURN, // return
   ND_IF, // if else
   ND_WHILE, // while
-  ND_FOR,
+  ND_FOR, // for
+  ND_BLOCK, // block
 } NodeKind;
 
 typedef struct Node Node;
@@ -60,6 +61,7 @@ struct Node{
     Node *for_ident;  //for文の条件式で使う変数
     Node *for_cond;   //for文の条件式
     Node *for_else;   //for文の条件式が満たされなかったときの式
+    Node **code_stm;   //blockに含まれる式
     int val;       //kindがND_NUMの場合のみ使う
     int offset;    //kindがND_LVARの場合のみ使う
 };
@@ -77,8 +79,10 @@ struct LVar{
 //複数ファイルで共有されている変数
 extern char *user_input;
 extern Token *token;
-extern Node *code[100];
+extern Node *code_prog[100];
 extern LVar *locals;
+
+
 
 //複数ファイルで共有されている関数
 void error(char *fmt, ...);

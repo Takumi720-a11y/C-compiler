@@ -1,7 +1,7 @@
 //パーサ
 #include "9cc.h"
 
-Node *code[100];
+Node *code_prog[100];
 LVar *locals;
 char *user_input;
 void error(char *fmt, ...) {
@@ -64,13 +64,25 @@ Node *primary(void);      // = num | ident | "("expr")"
 void program() {
   int i = 0;
   while (!at_eof())
-    code[i++] = stmt();
-  code[i] = NULL;
+    code_prog[i++] = stmt();
+  code_prog[i] = NULL;
 }// = stmt*
 
 Node *stmt(void){
   Node *node;
-  if(consume("return")){
+  if(consume("{")){
+    node = calloc(1,sizeof(Node));
+    node->kind = ND_BLOCK;
+    node->code_stm = calloc(100,sizeof(Node *));
+    int i = 0;
+    while(!consume("}")){
+      if(at_eof())
+        error_at(token->str,"'}'がありません");
+      node->code_stm[i++] = stmt();
+    }
+    node->code_stm[i] = NULL;
+    return node;
+  }else if(consume("return")){
 		node = calloc(1,sizeof(Node));
 		node->kind = ND_RETURN;
 		node->lhs = expr();
