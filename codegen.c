@@ -1,7 +1,7 @@
 //コードジェネレーター
 #include "9cc.h"
 
-
+int label_seq = 0;
 void gen_lval(Node *node){
     if(node->kind != ND_LVAR)
         error("代入の左辺値が変数ではありません");
@@ -40,6 +40,49 @@ void gen(Node *node){
         printf("  pop rbp\n");
         printf("  ret\n");
         return;
+    case ND_IF:
+        int seq_1 = label_seq++;
+        gen(node->cond);
+        printf("	pop rax\n");
+				printf("	cmp rax, 0\n");
+
+				if(node->els){
+					printf("	je .Lelse%d\n",seq_1);
+					gen(node->then);
+					printf("	jmp .Lend%d\n",seq_1);
+					printf(".Lelse%d:\n",seq_1);
+					gen(node->els);
+					printf(".Lend%d:\n",seq_1);
+				}else{
+					printf("	je .Lend%d\n",seq_1);
+					gen(node->then);
+					printf(".Lend%d:\n",seq_1);
+				}
+				return;
+		case ND_WHILE:
+				int seq_2 = label_seq++;
+				printf(".Lbegin%d:\n",seq_2);
+				gen(node->cond);
+				printf("	pop rax\n");
+				printf("	cmp rax, 0\n");
+				printf("	je .Lend%d\n",seq_2);
+				gen(node->then);
+				printf("	jmp .Lbegin%d\n",seq_2);
+				printf(".Lend%d:\n",seq_2);
+				return;
+		case ND_FOR:
+				int seq_3 = label_seq++;
+				gen(node->for_ident);
+				printf(".Lbegin%d:\n",seq_3);
+				gen(node->for_cond);
+				printf("	pop rax\n");
+				printf("	cmp rax, 0\n");
+				printf("	je .Lend%d\n",seq_3);
+				gen(node->then);
+				gen(node->for_else);
+				printf("	jmp .Lbegin%d\n",seq_3);
+				printf(".Lend%d:\n",seq_3);
+				return;
   }
   gen(node->lhs);
   gen(node->rhs);

@@ -51,7 +51,7 @@ LVar *find_lvar(Token *tok){
   return NULL;
 }
      
-Node *stmt(void);         // = expr";" | "return"expr";"
+Node *stmt(void);         // = expr";" | "return"expr";" | "if" "(" expr ")" stmt ("else" stmt)?
 Node *expr(void);         // = assign
 Node *assign(void);       // = equality("=" assign)?
 Node *equalty(void);      // = relational("==" relational | "!=" relational)*
@@ -74,7 +74,44 @@ Node *stmt(void){
 		node = calloc(1,sizeof(Node));
 		node->kind = ND_RETURN;
 		node->lhs = expr();
-	}else{
+	}else if(consume("if")){
+    node = calloc(1,sizeof(Node));
+    node->kind = ND_IF;
+    expect("(");
+    node->cond = expr();
+    expect(")");
+    node->then = stmt();
+    if(consume("else")){
+      node->els = stmt();
+    }
+    return node;
+  }else if(consume("while")){
+    node = calloc(1,sizeof(Node));
+    node->kind = ND_WHILE;
+    expect("(");
+    node->cond = expr();
+    expect(")");
+    node->then = stmt();
+    return node;
+  }else if(consume("for")){
+    node = calloc(1,sizeof(Node));
+    node->kind = ND_FOR;
+    expect("(");
+    if(!consume(";")){
+      node->for_ident = expr();
+      expect(";");
+    }
+    if(!consume(";")){
+      node->for_cond = expr();
+      expect(";");
+    }
+    if(!consume(")")){
+      node->for_else = expr();
+      expect(")");
+    }
+    node->then = stmt();
+    return node;
+  }else{
 		node = expr();
 	}
 	if(!consume(";"))

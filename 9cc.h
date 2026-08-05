@@ -13,7 +13,6 @@ typedef enum {
   TK_IDENT,    //識別子
   TK_NUM,      // 整数トークン
   TK_EOF,      // 入力の終わりを表すトークン
-  TK_RETURN,   // returnを表すトークン
 } TokenKind;
 
 typedef struct Token Token;
@@ -43,6 +42,9 @@ typedef enum{
   ND_ASSIGN, // =
   ND_LVAR, // ローカル変数
   ND_RETURN, // return
+  ND_IF, // if else
+  ND_WHILE, // while
+  ND_FOR,
 } NodeKind;
 
 typedef struct Node Node;
@@ -52,6 +54,12 @@ struct Node{
     NodeKind kind; //ノードの型
     Node *lhs;     //左辺
     Node *rhs;     //右辺
+    Node *cond;    //条件式
+    Node *then;    //条件が真の時
+    Node *els;     //条件が偽の時
+    Node *for_ident;  //for文の条件式で使う変数
+    Node *for_cond;   //for文の条件式
+    Node *for_else;   //for文の条件式が満たされなかったときの式
     int val;       //kindがND_NUMの場合のみ使う
     int offset;    //kindがND_LVARの場合のみ使う
 };
