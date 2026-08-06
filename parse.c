@@ -51,7 +51,7 @@ LVar *find_lvar(Token *tok){
   return NULL;
 }
 
-Node *function(void);     // = ident "(" ")" stmt
+Node *function(void);     // = ident "(" ident*? ")" stmt
 Node *stmt(void);         // = expr";" | "return"expr";" | "if" "(" expr ")" stmt ("else" stmt)?
 Node *expr(void);         // = assign
 Node *assign(void);       // = equality("=" assign)?
@@ -80,7 +80,34 @@ Node *function(){
   node->function_name = tok->str;
   node->function_name_len = tok->len;
   expect("(");
-  expect(")");
+  int argc = 0;
+  if(!consume(")")){
+    for(;;){
+      Token *param_tok = consume_ident();
+      if (!param_tok)
+        error_at(token->str, "引数名ではありません");
+      if (argc >= 6)
+        error_at(param_tok->str, "引数は最大6個です");
+      if (find_lvar(param_tok))
+        error_at(param_tok->str, "同じ引数名が重複しています");
+
+      LVar *lvar = calloc(1,sizeof(LVar));
+      lvar->name = param_tok->str;
+      lvar->len = param_tok->len;
+      lvar->next = locals;
+      if(locals)
+        lvar->offset = locals->offset + 8;
+      else
+        lvar->offset = 8;
+      locals = lvar;
+      node->args[argc++] = locals; //args[]の要素一つ一つにLVarが代入されている
+      if(consume(")"))
+        break;
+      expect(",");
+    }
+  }
+  
+  node->argc = argc;
   node->function_body = stmt();
   if (node->function_body->kind != ND_BLOCK)
     error("関数本体はブロックである必要があります");
@@ -245,8 +272,8 @@ Node *primary(void) {
       lvar->name = tok->str;
       lvar->len = tok->len;
       if(locals)
-        lvar->offset = locals->offset+8;
-      else
+        lvar->offset = locals->offset + 8;
+      else  
         lvar->offset = 8;
       node->offset = lvar->offset;
       locals = lvar;

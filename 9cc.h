@@ -16,6 +16,8 @@ typedef enum {
 } TokenKind;
 
 typedef struct Token Token;
+typedef struct Node Node;
+typedef struct LVar LVar;
 
 // トークン型
 struct Token {
@@ -25,8 +27,6 @@ struct Token {
   char *str;      // トークン文字列
   int len;         //トークンの長さ
 };
-
-
 
 //ノードの種類
 typedef enum{
@@ -49,8 +49,6 @@ typedef enum{
   ND_FUNCTION, //関数
 } NodeKind;
 
-typedef struct Node Node;
-
 //ノードの型
 struct Node{
     NodeKind kind; //ノードの型
@@ -64,13 +62,13 @@ struct Node{
     Node *for_else;   //for文の条件式が満たされなかったときの式
     Node **code_stm;   //blockに含まれる式
     Node *function_body;  //関数の中身
+    LVar *args[6];  //引数
     char *function_name;    //関数の名前
     int function_name_len; //関数の名前の長さ
     int val;       //kindがND_NUMの場合のみ使う
     int offset;    //kindがND_LVARの場合のみ使う
+    int argc;      //引数の数
 };
-
-typedef struct LVar LVar;
 
 //ローカル変数の型
 struct LVar{
