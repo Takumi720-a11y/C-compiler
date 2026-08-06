@@ -50,7 +50,8 @@ LVar *find_lvar(Token *tok){
       return var;
   return NULL;
 }
-     
+
+Node *function(void);     // = ident "(" ")" stmt
 Node *stmt(void);         // = expr";" | "return"expr";" | "if" "(" expr ")" stmt ("else" stmt)?
 Node *expr(void);         // = assign
 Node *assign(void);       // = equality("=" assign)?
@@ -64,9 +65,27 @@ Node *primary(void);      // = num | ident | "("expr")"
 void program() {
   int i = 0;
   while (!at_eof())
-    code_prog[i++] = stmt();
+    code_prog[i++] = function();
   code_prog[i] = NULL;
-}// = stmt*
+}// = function*
+
+Node *function(){
+  locals = NULL;
+  Node *node;
+  node = calloc(1,sizeof(Node));
+  node->kind = ND_FUNCTION;
+  Token *tok = consume_ident();
+  if (!tok)
+    error_at(token->str, "関数名ではありません");
+  node->function_name = tok->str;
+  node->function_name_len = tok->len;
+  expect("(");
+  expect(")");
+  node->function_body = stmt();
+  if (node->function_body->kind != ND_BLOCK)
+    error("関数本体はブロックである必要があります");
+  return node;
+}
 
 Node *stmt(void){
   Node *node;

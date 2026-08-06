@@ -44,51 +44,50 @@ void gen(Node *node){
         int seq_1 = label_seq++;
         gen(node->cond);
         printf("	pop rax\n");
-				printf("	cmp rax, 0\n");
+		printf("	cmp rax, 0\n");
 
-				if(node->els){
-					printf("	je .Lelse%d\n",seq_1);
-					gen(node->then);
-					printf("	jmp .Lend%d\n",seq_1);
-					printf(".Lelse%d:\n",seq_1);
-					gen(node->els);
-					printf(".Lend%d:\n",seq_1);
-				}else{
-					printf("	je .Lend%d\n",seq_1);
-					gen(node->then);
-					printf(".Lend%d:\n",seq_1);
-				}
-				return;
-		case ND_WHILE:
-				int seq_2 = label_seq++;
-				printf(".Lbegin%d:\n",seq_2);
-				gen(node->cond);
-				printf("	pop rax\n");
-				printf("	cmp rax, 0\n");
-				printf("	je .Lend%d\n",seq_2);
-				gen(node->then);
-				printf("	jmp .Lbegin%d\n",seq_2);
-				printf(".Lend%d:\n",seq_2);
-				return;
-		case ND_FOR:
-				int seq_3 = label_seq++;
-				gen(node->for_ident);
-				printf(".Lbegin%d:\n",seq_3);
-				gen(node->for_cond);
-				printf("	pop rax\n");
-				printf("	cmp rax, 0\n");
-				printf("	je .Lend%d\n",seq_3);
-				gen(node->then);
-				gen(node->for_else);
-				printf("	jmp .Lbegin%d\n",seq_3);
-				printf(".Lend%d:\n",seq_3);
-				return;
-		case ND_BLOCK:
-				for(int i = 0; node->code_stm[i]; i++){
-					gen(node->code_stm[i]);
-					printf("	pop rax\n");
-				}
-				return;
+		if(node->els){
+			printf("	je .Lelse%d\n",seq_1);
+			gen(node->then);
+			printf("	jmp .Lend%d\n",seq_1);
+			printf(".Lelse%d:\n",seq_1);
+			gen(node->els);
+			printf(".Lend%d:\n",seq_1);
+		}else{
+			printf("	je .Lend%d\n",seq_1);
+			gen(node->then);
+			printf(".Lend%d:\n",seq_1);
+		}
+		return;
+	case ND_WHILE:
+		int seq_2 = label_seq++;
+		printf(".Lbegin%d:\n",seq_2);
+		gen(node->cond);
+		printf("	pop rax\n");
+		printf("	cmp rax, 0\n");
+		printf("	je .Lend%d\n",seq_2);
+		gen(node->then);
+		printf("	jmp .Lbegin%d\n",seq_2);				printf(".Lend%d:\n",seq_2);
+		return;
+	case ND_FOR:
+		int seq_3 = label_seq++;
+		gen(node->for_ident);
+		printf(".Lbegin%d:\n",seq_3);
+		gen(node->for_cond);
+    	printf("	pop rax\n");
+		printf("	cmp rax, 0\n");
+		printf("	je .Lend%d\n",seq_3);
+		gen(node->then);
+		gen(node->for_else);
+		printf("	jmp .Lbegin%d\n",seq_3);
+		printf(".Lend%d:\n",seq_3);
+		return;
+	case ND_BLOCK:
+		for(int i = 0; node->code_stm[i]; i++){
+			gen(node->code_stm[i]);
+			printf("	pop rax\n");
+		}
+		return;
   }
   gen(node->lhs);
   gen(node->rhs);
@@ -133,4 +132,17 @@ void gen(Node *node){
   }
 
   printf("push rax\n");
+}
+void gen_function(Node *node){
+    printf(".globl %.*s\n",node->function_name_len,node->function_name);
+    printf("%.*s:\n",node->function_name_len,node->function_name);
+    printf("  push rbp\n");
+    printf("  mov rbp, rsp\n");
+    printf("  sub rsp, 208\n");
+
+    gen(node->function_body);
+
+    printf("  mov rsp, rbp\n");
+    printf("  pop rbp\n");
+    printf("  ret\n");
 }

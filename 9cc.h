@@ -46,6 +46,7 @@ typedef enum{
   ND_WHILE, // while
   ND_FOR, // for
   ND_BLOCK, // block
+  ND_FUNCTION, //関数
 } NodeKind;
 
 typedef struct Node Node;
@@ -62,6 +63,9 @@ struct Node{
     Node *for_cond;   //for文の条件式
     Node *for_else;   //for文の条件式が満たされなかったときの式
     Node **code_stm;   //blockに含まれる式
+    Node *function_body;  //関数の中身
+    char *function_name;    //関数の名前
+    int function_name_len; //関数の名前の長さ
     int val;       //kindがND_NUMの場合のみ使う
     int offset;    //kindがND_LVARの場合のみ使う
 };
@@ -75,6 +79,8 @@ struct LVar{
   int len;      //名前の長さ
   int offset;   //RBPからのオフセット
 };
+
+
 
 //複数ファイルで共有されている変数
 extern char *user_input;
@@ -95,4 +101,4 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 Token *tokenize(void);
 Token *consume_ident();
 void program(void);
-void gen(Node *node);
+void gen_function(Node *node);
