@@ -104,15 +104,15 @@ Token *tokenize() {
       p += 3;
       continue;
     }
-    
-    if(startswith(p,"==") || startswith(p,"!=") ||
+
+     if(startswith(p,"==") || startswith(p,"!=") ||
        startswith(p,"<=") || startswith(p,">=")){
       cur = new_token(TK_RESERVED, cur, p,2);
       p += 2;
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '>' || *p == '<' || *p == '=' || *p == ';' || *p == '{' || *p == '}' || *p == ',') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '>' || *p == '<' || *p == '=' || *p == ';' || *p == '{' || *p == '}' || *p == ',' || *p == '&') {
       cur = new_token(TK_RESERVED, cur, p,1);
       p += 1;
       continue;

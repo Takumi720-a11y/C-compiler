@@ -59,7 +59,7 @@ Node *equalty(void);      // = relational("==" relational | "!=" relational)*
 Node *relational(void);   // = add("<" add | "<=" add | ">" add | ">=" add)*
 Node *add(void);          // = mul("+" mul | "-" mul)*
 Node *mul(void);          // = unary("*" unary | "/" unary)*
-Node *unary(void);        // = ("+" | "-")? primary
+Node *unary(void);        // = ("+" | "-")? primary | "*" unary | "&" unary
 Node *primary(void);      // = num | ident | "("expr")"
 
 void program() {
@@ -246,10 +246,16 @@ Node *mul(void){
 }
 
 Node *unary(void){
+  Node *node;
   if(consume("+"))
     return primary();
-  if(consume("-"))
+  else if(consume("-"))
     return new_node(ND_SUB,new_node_num(0),primary());
+  else if(consume("*")){
+    return new_node(ND_DEREF,unary(),NULL);
+  }else if(consume("&")){
+    return new_node(ND_ADDR,unary(),NULL);
+  }
   return primary();
 }
 

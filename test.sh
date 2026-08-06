@@ -26,4 +26,5 @@ assert 3 'main(){a=1;b=2;return a+b;}'
 assert 3 'main(){if(1){a=1;b=2;return a+b;}}'
 assert 5 'main(){return 5;}'
 assert 105 'main(a,b){a=20;b=5;c=5;return c+a*b;}'
+assert 3 'main(){x=3;y=5;z=&y+8;return *z;}'
 echo OK

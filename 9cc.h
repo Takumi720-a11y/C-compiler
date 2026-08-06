@@ -47,6 +47,8 @@ typedef enum{
   ND_FOR, // for
   ND_BLOCK, // block
   ND_FUNCTION, //関数
+  ND_ADDR,  //アドレスを整数をして返す
+  ND_DEREF,  //アドレスから値を呼んでくる
 } NodeKind;
 
 //ノードの型
