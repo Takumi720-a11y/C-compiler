@@ -18,6 +18,13 @@ typedef enum {
 typedef struct Token Token;
 typedef struct Node Node;
 typedef struct LVar LVar;
+typedef struct Type Type;
+
+//変数とポインタを区別する
+struct Type{
+  enum{INT,PTR} ty;
+  struct Type *ptr_to;
+};
 
 // トークン型
 struct Token {
@@ -47,8 +54,8 @@ typedef enum{
   ND_FOR, // for
   ND_BLOCK, // block
   ND_FUNCTION, //関数
-  ND_ADDR,  //アドレスを整数をして返す
-  ND_DEREF,  //アドレスから値を呼んでくる
+  ND_ADDR,  //アドレスを整数をして返す。&
+  ND_DEREF,  //アドレスから値を呼んでくる。*
   ND_VAR_DEF,  //変数の定義を行う
 } NodeKind;
 
@@ -66,6 +73,7 @@ struct Node{
     Node **code_stm;   //blockに含まれる式
     Node *function_body;  //関数の中身
     LVar *args[6];  //引数
+    Type *ty;   //変数かポインタ変数
     char *function_name;    //関数の名前
     int function_name_len; //関数の名前の長さ
     int val;       //kindがND_NUMの場合のみ使う
@@ -76,6 +84,7 @@ struct Node{
 //ローカル変数の型
 struct LVar{
   LVar *next;   //次の変数 or NULL
+  Type *ty;    //変数とポインタ変数のどちらであるか定義
   char *name;  //変数の名前
   int len;      //名前の長さ
   int offset;   //RBPからのオフセット
@@ -96,6 +105,7 @@ void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
 void expect(char *op);
+void gen();
 int expect_number();
 bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);

@@ -51,8 +51,21 @@ LVar *find_lvar(Token *tok){
   return NULL;
 }
 
-Node *function(void);     // = ident "(" ident*? ")" stmt
-Node *stmt(void);         // = expr";" | "return"expr";" | "if" "(" expr ")" stmt ("else" stmt)?
+Type *basetype(){
+  expect("int");
+  Type *ty = calloc(1,sizeof(Type));
+  ty->ty = INT;
+  while(consume("*")){
+    Type *ptr = calloc(1,sizeof(Type));
+    ptr->ty = PTR;
+    ptr->ptr_to = ty;
+    ty = ptr;
+  }
+  return ty;
+}
+
+Node *function(void);     // = "int" ident "(" params? ")" stmt
+Node *stmt(void);         // = "int" ident ";" | expr";" | "return"expr";" | "if" "(" expr ")" stmt ("else" stmt)?
 Node *expr(void);         // = assign
 Node *assign(void);       // = equality("=" assign)?
 Node *equalty(void);      // = relational("==" relational | "!=" relational)*
@@ -74,7 +87,7 @@ Node *function(){
   Node *node;
   node = calloc(1,sizeof(Node));
   node->kind = ND_FUNCTION;
-  expect("int");
+  Type *ty = basetype();
   Token *tok = consume_ident();
   if (!tok)
     error_at(token->str, "関数名ではありません");
@@ -84,7 +97,7 @@ Node *function(){
   int argc = 0;
   if(!consume(")")){
     for(;;){
-      expect("int");
+      Type *ty = basetype();
       Token *param_tok = consume_ident();
       if (!param_tok)
         error_at(token->str, "引数名ではありません");
@@ -94,6 +107,7 @@ Node *function(){
         error_at(param_tok->str, "同じ引数名が重複しています");
 
       LVar *lvar = calloc(1,sizeof(LVar));
+      lvar->ty = ty;
       lvar->name = param_tok->str;
       lvar->len = param_tok->len;
       lvar->next = locals;
