@@ -98,6 +98,9 @@ void gen(Node *node){
       printf("  mov rax,[rax]\n");
       printf("  push rax\n");
       return;
+    case ND_VAR_DEF:  //変数の定義
+      printf("  push 0\n");
+      return;
   }
   gen(node->lhs);
   gen(node->rhs);

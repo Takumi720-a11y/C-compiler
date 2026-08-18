@@ -49,6 +49,7 @@ typedef enum{
   ND_FUNCTION, //関数
   ND_ADDR,  //アドレスを整数をして返す
   ND_DEREF,  //アドレスから値を呼んでくる
+  ND_VAR_DEF,  //変数の定義を行う
 } NodeKind;
 
 //ノードの型

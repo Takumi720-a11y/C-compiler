@@ -78,10 +78,15 @@ Token *tokenize() {
       p++;
       continue;
     }
-    
+       
     if(strncmp(p,"return",6) == 0 && !is_alnum(p[6])){
       cur = new_token(TK_RESERVED, cur, p,6);
       p += 6;
+      continue;
+    }
+    if(strncmp(p,"int",3) == 0 && !is_alnum(p[3])){
+      cur = new_token(TK_RESERVED, cur, p, 3);
+      p += 3;
       continue;
     }
     if(strncmp(p,"if",2) == 0 && !is_alnum(p[2])){
@@ -143,4 +148,3 @@ Token *tokenize() {
   new_token(TK_EOF, cur, p,0);
   return head.next;
 }
-

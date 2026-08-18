@@ -74,6 +74,7 @@ Node *function(){
   Node *node;
   node = calloc(1,sizeof(Node));
   node->kind = ND_FUNCTION;
+  expect("int");
   Token *tok = consume_ident();
   if (!tok)
     error_at(token->str, "関数名ではありません");
@@ -83,6 +84,7 @@ Node *function(){
   int argc = 0;
   if(!consume(")")){
     for(;;){
+      expect("int");
       Token *param_tok = consume_ident();
       if (!param_tok)
         error_at(token->str, "引数名ではありません");
@@ -127,6 +129,25 @@ Node *stmt(void){
       node->code_stm[i++] = stmt();
     }
     node->code_stm[i] = NULL;
+    return node;
+  }else if(consume("int")){
+    Token *tok = consume_ident();
+    if(!tok)
+      error_at(token->str,"変数名ではありません");
+    if(find_lvar(tok))
+      error_at(tok->str,"変数が重複して定義されています");
+    LVar *lvar = calloc(1,sizeof(LVar));
+    lvar->next = locals;
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+    if(locals)
+      lvar->offset = locals->offset + 8;
+    else
+      lvar->offset = 8;
+    locals = lvar;
+    expect(";");
+    node = calloc(1,sizeof(Node));
+    node->kind = ND_VAR_DEF;
     return node;
   }else if(consume("return")){
 		node = calloc(1,sizeof(Node));
@@ -267,27 +288,14 @@ Node *primary(void) {
   }
   Token *tok = consume_ident();
   if (tok) {
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
     LVar *lvar = find_lvar(tok);
-    if(lvar){
-      node->offset = lvar->offset;
-    }else{
-      lvar = calloc(1,sizeof(LVar));
-      lvar->next = locals;
-      lvar->name = tok->str;
-      lvar->len = tok->len;
-      if(locals)
-        lvar->offset = locals->offset + 8;
-      else  
-        lvar->offset = 8;
-      node->offset = lvar->offset;
-      locals = lvar;
-    }
-    
+    if(!lvar)
+      error_at(tok->str, "未定義の変数です");
+    Node *node = calloc(1,sizeof(Node));
+    node->kind = ND_LVAR;
+    node->offset = lvar->offset;
     return node;
   }
 
   return new_node_num(expect_number());
 }
-
