@@ -13,6 +13,7 @@ typedef enum {
   TK_IDENT,    //識別子
   TK_NUM,      // 整数トークン
   TK_EOF,      // 入力の終わりを表すトークン
+  TK_SIZEOF,   //sizeof演算子
 } TokenKind;
 
 typedef struct Token Token;
@@ -104,6 +105,7 @@ extern LVar *locals;
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
+bool consume_sizeof(char *op);
 void expect(char *op);
 void gen();
 int expect_number();

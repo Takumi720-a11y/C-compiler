@@ -86,7 +86,7 @@ Node *equalty(void);      // = relational("==" relational | "!=" relational)*
 Node *relational(void);   // = add("<" add | "<=" add | ">" add | ">=" add)*
 Node *add(void);          // = mul("+" mul | "-" mul)*
 Node *mul(void);          // = unary("*" unary | "/" unary)*
-Node *unary(void);        // = ("+" | "-")? primary | "*" unary | "&" unary
+Node *unary(void);        // = "sizeof" unary | ("+" | "-")? primary | "*" unary | "&" unary
 Node *primary(void);      // = num | ident | "("expr")"
 
 void program() {
@@ -283,16 +283,20 @@ Node *add(void){
   for(;;){
     if(consume("+")){
       Node *rhs = mul();
-      if(node->ty->ty == PTR)
-        rhs = new_node(ND_MUL,rhs,new_node_num(4));
-      node = new_node(ND_ADD,node,rhs);
+      if(node->ty && node->ty->ty == PTR){
+        int size  = (node->ty->ptr_to->ty == INT) ? 4:8;
+        rhs = new_node(ND_MUL,rhs,new_node_num(size));
+      }
+        node = new_node(ND_ADD,node,rhs);
       continue;
     } 
     if(consume("-")){
       Node *rhs = mul();
-      if(node->ty->ty == PTR)
-        rhs = new_node(ND_MUL,rhs,new_node_num(4));
-      node = new_node(ND_SUB,node,rhs);
+      if(node->ty || node->ty->ty == PTR){
+        int size  = (node->ty->ptr_to->ty == INT) ? 4:8;
+        rhs = new_node(ND_MUL,rhs,new_node_num(size));
+      }
+        node = new_node(ND_SUB,node,rhs);
       continue;
     }
     return node;
@@ -314,7 +318,16 @@ Node *mul(void){
 
 Node *unary(void){
   Node *node;
-  if(consume("+"))
+  if(consume_sizeof("sizeof")){
+    Node *size = unary();
+    if(!size->ty)
+      error("sizeofの対象の型が不明です");
+    if(size->ty->ty == INT)
+      return new_node_num(4);
+    if(size->ty->ty == PTR)
+      return new_node_num(8);
+  }
+  else if(consume("+"))
     return primary();
   else if(consume("-"))
     return new_node(ND_SUB,new_node_num(0),primary());

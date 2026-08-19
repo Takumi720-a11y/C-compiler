@@ -12,6 +12,13 @@ bool consume(char *op) {
   return true;
 }
 
+bool consume_sizeof(char *op){
+  if(token->kind != TK_SIZEOF)
+    return false;
+  token = token->next;
+  return true;
+}
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
 // それ以外の場合にはエラーを報告する。
 void expect(char *op) {
@@ -110,7 +117,13 @@ Token *tokenize() {
       continue;
     }
 
-     if(startswith(p,"==") || startswith(p,"!=") ||
+    if(strncmp(p,"sizeof",6) == 0 && !is_alnum(p[6])){
+      cur = new_token(TK_SIZEOF,cur,p,6);
+      p += 6;
+      continue;
+    }
+
+    if(startswith(p,"==") || startswith(p,"!=") ||
        startswith(p,"<=") || startswith(p,">=")){
       cur = new_token(TK_RESERVED, cur, p,2);
       p += 2;
