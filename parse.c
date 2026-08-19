@@ -39,8 +39,20 @@ Node *new_node(NodeKind kind,Node *lhs, Node *rhs){
 
 Node *new_node_num(int val){
   Node *node = calloc(1, sizeof(Node));
+  Type *ty = calloc(1,sizeof(Type));
   node -> kind = ND_NUM;
   node -> val = val;
+  ty->ty = INT;
+  node->ty = ty;
+  return node;
+}
+
+Node *new_node_addr(Node *lhs){
+  Node *node = new_node(ND_ADDR, lhs, NULL);
+  Type *ty = calloc(1,sizeof(Type));
+  ty->ty = PTR;
+  ty->ptr_to = lhs->ty;
+  node->ty = ty;
   return node;
 }
 
@@ -63,6 +75,8 @@ Type *basetype(){
   }
   return ty;
 }
+
+
 
 Node *function(void);     // = "int" ident "(" params? ")" stmt
 Node *stmt(void);         // = "int" ident ";" | expr";" | "return"expr";" | "if" "(" expr ")" stmt ("else" stmt)?
@@ -145,6 +159,14 @@ Node *stmt(void){
     node->code_stm[i] = NULL;
     return node;
   }else if(consume("int")){
+    Type *ty = calloc(1,sizeof(Type));
+    ty->ty = INT;
+    while(consume("*")){
+      Type *ptr = calloc(1,sizeof(Type));
+      ptr->ty = PTR;
+      ptr->ptr_to = ty;
+      ty = ptr; 
+    }
     Token *tok = consume_ident();
     if(!tok)
       error_at(token->str,"変数名ではありません");
@@ -154,6 +176,7 @@ Node *stmt(void){
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
+    lvar->ty = ty;
     if(locals)
       lvar->offset = locals->offset + 8;
     else
@@ -258,12 +281,21 @@ Node *add(void){
   Node *node = mul();
 
   for(;;){
-    if(consume("+"))
-      node = new_node(ND_ADD,node,mul());
-    else if(consume("-"))
-      node = new_node(ND_SUB,node,mul());
-    else  
-      return node;
+    if(consume("+")){
+      Node *rhs = mul();
+      if(node->ty->ty == PTR)
+        rhs = new_node(ND_MUL,rhs,new_node_num(4));
+      node = new_node(ND_ADD,node,rhs);
+      continue;
+    } 
+    if(consume("-")){
+      Node *rhs = mul();
+      if(node->ty->ty == PTR)
+        rhs = new_node(ND_MUL,rhs,new_node_num(4));
+      node = new_node(ND_SUB,node,rhs);
+      continue;
+    }
+    return node;
   }
 }
 
@@ -287,9 +319,14 @@ Node *unary(void){
   else if(consume("-"))
     return new_node(ND_SUB,new_node_num(0),primary());
   else if(consume("*")){
-    return new_node(ND_DEREF,unary(),NULL);
+    Node *lhs = unary();
+    Node *node = new_node(ND_DEREF,lhs,NULL);
+    if(!lhs->ty || lhs->ty->ty != PTR)
+      error("ポインタではない値をデリファレンスしています");
+    node->ty = lhs->ty->ptr_to;
+    return node;
   }else if(consume("&")){
-    return new_node(ND_ADDR,unary(),NULL);
+    return new_node_addr(unary());
   }
   return primary();
 }
@@ -308,6 +345,7 @@ Node *primary(void) {
     Node *node = calloc(1,sizeof(Node));
     node->kind = ND_LVAR;
     node->offset = lvar->offset;
+    node->ty = lvar->ty;
     return node;
   }
 
